@@ -1,4 +1,5 @@
-# ember-awesome-macros
+ember-awesome-macros
+==============================================================================
 
 [![Greenkeeper badge](https://badges.greenkeeper.io/kellyselden/ember-awesome-macros.svg)](https://greenkeeper.io/)
 [![npm version](https://badge.fury.io/js/ember-awesome-macros.svg)](https://badge.fury.io/js/ember-awesome-macros)
@@ -6,7 +7,7 @@
 [![dependencies Status](https://david-dm.org/kellyselden/ember-awesome-macros/status.svg)](https://david-dm.org/kellyselden/ember-awesome-macros)
 [![devDependencies Status](https://david-dm.org/kellyselden/ember-awesome-macros/dev-status.svg)](https://david-dm.org/kellyselden/ember-awesome-macros?type=dev)
 [![Ember Observer Score](https://emberobserver.com/badges/ember-awesome-macros.svg)](https://emberobserver.com/addons/ember-awesome-macros)
-![Ember Version](https://embadge.io/v1/badge.svg?start=1.13.0)
+[![Ember Version](https://img.shields.io/badge/ember-2.12%2B-brightgreen.svg)](https://www.emberjs.com/)
 
 A collection of Ember computed macros. All the macros are composable, meaning you can nest them to your heart's content, like so:
 
@@ -14,12 +15,37 @@ A collection of Ember computed macros. All the macros are composable, meaning yo
 result: conditional(and(not('value1'), 'value2'), sum('value3', 1), collect('value4', toUpper('value5'))) // lisp much?
 ```
 
-Two essential primitive macros come from a different addon: [ember-macro-helpers](https://github.com/kellyselden/ember-macro-helpers)
+Arguments to macros can be:
+- A string, in which case it references the name of a property whose value is used for the calculation
+- A non-string value, in which case it is used as such
+- A [raw](https://github.com/kellyselden/ember-macro-helpers#raw) macro, which lets you use a string as the value without referencing a property
+- Another macro
 
-* [raw](https://github.com/kellyselden/ember-macro-helpers#raw) makes composing macros easier
+Examples of these different usages:
+
+```js
+source1: 'my value',
+source2: 2
+
+value1: equal('source1', 'source2'), // false
+value2: equal('source2', 2), // true
+value3: equal('source1', raw('my value')) // true
+value4: equal('source2', sum(1, 1)) // true
+```
+
+Three essential primitive macros are re-exported from a different addon: [ember-macro-helpers](https://github.com/kellyselden/ember-macro-helpers)
+
+* [computed](https://github.com/kellyselden/ember-macro-helpers#computed) makes composing macros easier
+* [raw](https://github.com/kellyselden/ember-macro-helpers#raw) allows you to escape string literals to be used in macros
 * [writable](https://github.com/kellyselden/ember-macro-helpers#writable) makes setting macros possible
 
-The API is not final until 1.0. I will be adding aliases as I think of better names for things, and possibly breaking or removing existing macros.
+```js
+import computed from 'ember-awesome-macros/computed';
+import raw from 'ember-awesome-macros/raw';
+import writable from 'ember-awesome-macros/writable';
+// or
+import { computed, raw, writable } from 'ember-awesome-macros';
+```
 
 If you have any opinions or want a new macro added, just ask! Or feel free to submit a pull request.
 
@@ -27,11 +53,16 @@ If you have any opinions or want a new macro added, just ask! Or feel free to su
 
 [![Ember Awesome Macros](http://img.youtube.com/vi/kIDIa1NBZZI/maxresdefault.jpg)](https://www.youtube.com/watch?v=kIDIa1NBZZI)
 
-#### Usage
+Installation
+------------------------------------------------------------------------------
 
-```sh
+```
 ember install ember-awesome-macros
 ```
+
+
+Usage
+------------------------------------------------------------------------------
 
 ```js
 import nameOfMacro from 'ember-awesome-macros/name-of-macro';
@@ -76,6 +107,7 @@ import { nameOfMacro } from 'ember-awesome-macros';
 
 ##### Boolean
 * [`and`](#and)
+* [`bool`](#bool)
 * [`conditional`](#conditional)
 * [`defaultTrue`](#defaulttrue)
 * [`not`](#not)
@@ -99,6 +131,7 @@ import { nameOfMacro } from 'ember-awesome-macros';
 * [`divide`](#divide)
 * [`mod`](#mod)
 * [`multiply`](#multiply)
+* [`number`](#number-1)
 * [`parseFloat`](#parsefloat)
 * [`parseInt`](#parseint)
 * [`product`](#product)
@@ -136,6 +169,7 @@ import { nameOfMacro } from 'ember-awesome-macros';
 * [`string.isHtmlSafe`](#stringishtmlsafe)
 * [`string.lastIndexOf`](#stringlastindexof)
 * [`string.length`](#stringlength)
+* [`string.match`](#stringmatch)
 * [`string.replace`](#stringreplace)
 * [`string.split`](#stringsplit)
 * [`string.substr`](#stringsubstr)
@@ -144,6 +178,7 @@ import { nameOfMacro } from 'ember-awesome-macros';
 * [`string.titleize`](#stringtitleize)
 * [`string.toLower`](#stringtolower)
 * [`string.toUpper`](#stringtoupper)
+* [`string.trim`](#stringtrim)
 * [`string.underscore`](#stringunderscore)
 
 #### Custom macros
@@ -208,7 +243,9 @@ wraps [`Ember.Array.filterBy`](http://emberjs.com/api/classes/Ember.Array.html#m
 ```js
 array: Ember.A([{ test: 1 }, { test: 2 }]),
 key: 'test',
-value: array.filterBy('array', 'key', 2) // [{ test: 2 }]
+referenceValue: 1,
+value1: array.filterBy('array', 'key', 2), // [{ test: 2 }]
+value2: array.filterBy('array', raw('test'), 'referenceValue') // [{ test: 1 }]
 ```
 
 ##### `array.filter`
@@ -225,7 +262,9 @@ wraps [`Ember.Array.findBy`](http://emberjs.com/api/classes/Ember.Array.html#met
 ```js
 array: Ember.A([{ test: 1 }, { test: 2 }]),
 key: 'test',
-value: array.findBy('array', 'key', 2) // { test: 2 }
+referenceValue: 1,
+value1: array.findBy('array', 'key', 2), // { test: 2 }
+value2: array.findBy('array', raw('test'), 'referenceValue') // { test: 1 }
 ```
 
 ##### `array.find`
@@ -342,8 +381,10 @@ wraps [`Array.prototype.indexOf()`](https://developer.mozilla.org/en-US/docs/Web
 
 ```js
 array: [2, 5, 9, 2],
+referenceValue: 9,
 value1: array.indexOf('array', 2), // 0
-value2: array.indexOf('array', 2, 2) // 3
+value2: array.indexOf('array', 2, 2), // 3
+value3: array.indexOf('array', 'referenceValue') // 2
 ```
 
 ##### `array.invoke`
@@ -400,8 +441,10 @@ wraps [`Array.prototype.lastIndexOf()`](https://developer.mozilla.org/en-US/docs
 
 ```js
 array: [2, 5, 9, 2],
+referenceValue: 9,
 value1: array.lastIndexOf('array', 2), // 3
-value2: array.lastIndexOf('array', 2, 2) // 0
+value2: array.lastIndexOf('array', 2, 2), // 0
+value3: array.lastIndexOf('array', 'referenceValue') // 2
 ```
 
 ##### `array.last`
@@ -539,8 +582,22 @@ wraps [`Ember.Enumerable.without`](http://emberjs.com/api/classes/Ember.Enumerab
 
 ```js
 array: Ember.A([1, 2, 3]),
-value1: array.without('array', 2), // [1, 3]
-value2: array.without('array', array.objectAt(1)) // [1, 3]
+referenceValue: 3,
+value1: array.without('array', 'referenceValue'), // [1, 2]
+value2: array.without('array', 2), // [1, 3]
+value3: array.without('array', array.objectAt(1)) // [1, 3]
+```
+
+##### `bool`
+same as `Ember.computed.bool`, but allows composing
+
+```js
+source1: null,
+source2: 'my value 1',
+source3: { source: 'source3' },
+value1: bool('source1'), // false
+value2: bool('source2'), // true
+value3: bool('source3'), // true
 ```
 
 ##### `collect`
@@ -748,6 +805,15 @@ source3: 'my value',
 value1: notEqual('source1', 'source2'), // true
 value2: notEqual('source1', 'source3'), // false
 value3: notEqual('source1', 'source2', 'source3') // true
+```
+
+##### `number`
+wraps [`Number`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number), allows composing
+
+```js
+prop: true,
+example: number('prop'), // 1
+composingExample: sum(collect(8, number('prop'))) // 9
 ```
 
 ##### `or`
@@ -986,6 +1052,19 @@ example: string.length('string1'), // 3
 composingExample: string.length(tag`${'string1'}${'string2'}`) // 6
 ```
 
+##### `string.match`
+wraps [`String.prototype.match`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/match), allows composing
+
+```js
+string1: 'abc',
+string2: 'xyz',
+regex1: /abc/,
+regex2: /xyz/,
+example: string.match('string1', 'regex1'), // ['abc']
+example: string.match('string1', 'regex2'), // null
+composingExample: string.match(tag`${'string1'}${'string2'}`, 'regex2') // ['xyz']
+```
+
 ##### `string.replace`
 wraps [`String.prototype.replace`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace), allows composing
 
@@ -1051,6 +1130,14 @@ wraps [`String.prototype.toUpperCase()`](https://developer.mozilla.org/en-US/doc
 ```js
 originalValue: 'TestString',
 newValue: string.toUpper('originalValue') // 'TESTSTRING'
+```
+
+##### `string.trim`
+wraps [`String.prototype.trim()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/trim), allows composing
+
+```js
+originalValue: ' TestString ',
+newValue: string.trim('originalValue') // 'TestString'
 ```
 
 ##### `string.underscore`
@@ -1129,3 +1216,36 @@ value1: unless('condition1', 'expr1', 'expr2'), // 'my value 1'
 value2: unless('condition2', 'expr1', 'expr2'), // 'my value 2'
 value3: unless(and('condition1', 'condition2'), raw('my value 1'), raw('my value 2')) // 'my value 1'
 ```
+
+
+Contributing
+------------------------------------------------------------------------------
+
+### Installation
+
+* `git clone <repository-url>`
+* `cd ember-awesome-macros`
+* `npm install`
+
+### Linting
+
+* `npm run lint:js`
+* `npm run lint:js -- --fix`
+
+### Running tests
+
+* `ember test` – Runs the test suite on the current Ember version
+* `ember test --server` – Runs the test suite in "watch mode"
+* `ember try:each` – Runs the test suite against multiple Ember versions
+
+### Running the dummy application
+
+* `ember serve`
+* Visit the dummy application at [http://localhost:4200](http://localhost:4200).
+
+For more information on using ember-cli, visit [https://ember-cli.com/](https://ember-cli.com/).
+
+License
+------------------------------------------------------------------------------
+
+This project is licensed under the [MIT License](LICENSE.md).

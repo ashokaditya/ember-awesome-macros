@@ -2,6 +2,7 @@ export { default as add } from './add';
 export { default as and } from './and';
 import array from './array';
 export { array };
+export { default as bool } from './bool';
 export { default as collect } from './collect';
 export { default as computed } from './computed';
 export { default as conditional } from './conditional';
@@ -25,6 +26,7 @@ export { default as multiply } from './multiply';
 export { default as neq } from './neq';
 export { default as not } from './not';
 export { default as notEqual } from './not-equal';
+export { default as number } from './number';
 export { default as or } from './or';
 export { default as parseFloat } from './parse-float';
 export { default as parseInt } from './parse-int';
@@ -87,6 +89,7 @@ const substr = deprecate(string.substr, 'substr', 'string.substr');
 const substring = deprecate(string.substring, 'substring', 'string.substring');
 const toLower = deprecate(string.toLower, 'toLower', 'string.toLower');
 const toUpper = deprecate(string.toUpper, 'toUpper', 'string.toUpper');
+const trim = deprecate(string.trim, 'trim', 'string.trim');
 const underscore = deprecate(string.underscore, 'underscore', 'string.underscore');
 
 export {
@@ -131,5 +134,6 @@ export {
   substring,
   toLower,
   toUpper,
+  trim,
   underscore
 };

@@ -1,4 +1,3 @@
-/* eslint-env node */
 'use strict';
 
 const writeFile = require('broccoli-file-creator');
@@ -14,14 +13,14 @@ function addMath(trees) {
       let dasherized = dasherize(key);
       index += `export { default as ${key} } from './${dasherized}';`;
       trees.push(writeFile(`math/${dasherized}.js`, `
-        import curriedComputed from 'ember-macro-helpers/curried-computed';
+        import { curriedComputed } from 'ember-macro-helpers';
 
         export default curriedComputed(Math.${key});
       `));
     }
   });
 
-  trees.push(writeFile(`math/index.js`, index));
+  trees.push(writeFile('math/index.js', index));
 }
 
 module.exports = {
